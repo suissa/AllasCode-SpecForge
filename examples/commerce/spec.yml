@@ -1,0 +1,19 @@
+version: allas-spec/v1
+project: commerce-lifecycle
+features:
+  - id: commit-sale
+    title: Commit a paid sale
+    description: Finalize a sale only after payment and stock reservation have been validated.
+    intents:
+      - canonical_label: Sales.CommitSale
+        actor: SalesAgent
+        input: CommittedSaleRequest
+        output: CommittedSale
+        requires:
+          - Sales.ReserveStock.Ok
+          - Financial.ConfirmPayment.Ok
+        produces:
+          - Sales.CommitSale.Ok
+        invariants:
+          - stock.physical_quantity >= 0
+          - intent remains immutable during healing

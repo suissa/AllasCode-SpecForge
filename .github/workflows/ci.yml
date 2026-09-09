@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          check-latest: true
+      - run: node --test --experimental-strip-types test/**/*.test.ts
+      - run: node --experimental-strip-types src/cli.ts validate examples/commerce/spec.yml examples/commerce/plan.yml
+      - run: node --experimental-strip-types src/cli.ts generate examples/commerce/spec.yml examples/commerce/plan.yml generated
+      - run: node --experimental-strip-types src/cli.ts verify generated/TASK-commit-sale-sales-commit-sale/task.yml
+      - run: node --experimental-strip-types src/cli.ts materialize generated/TASK-commit-sale-sales-commit-sale/task.yml target
+      - run: node --experimental-strip-types src/cli.ts conformance generated/TASK-commit-sale-sales-commit-sale/task.yml target

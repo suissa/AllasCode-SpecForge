@@ -109,7 +109,7 @@ function validationsFor(intent: Intent, plan: Plan): Validation[] {
       id: "schema-contract",
       kind: "schema",
       required: true,
-      command: `allas-specforge verify task ${actionName}`,
+      command: `allas-specforge verify task.yml`,
       expected: "Intent, AtomicBehavior manifest and declared schemas are structurally valid.",
       trace: intent.canonical_label
     },
@@ -117,7 +117,7 @@ function validationsFor(intent: Intent, plan: Plan): Validation[] {
       id: "architecture-conformance",
       kind: "conformance",
       required: true,
-      command: `allas-specforge conformance ${actionName}`,
+      command: `allas-specforge conformance task.yml <target-project-root>`,
       expected: `Implementation uses ${plan.architecture.runtime}, ${plan.architecture.messaging}, and ${plan.architecture.event_store} as declared by the plan.`,
       trace: "plan.architecture"
     }

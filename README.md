@@ -32,14 +32,14 @@ Exact files + values + validations
 
 ## Initial scope
 
-Version `0.1.0` provides an executable, dependency-free TypeScript CLI using JSON inputs:
+Version `0.1.0` provides an executable, dependency-free TypeScript CLI using JSON or a safe YAML subset:
 
 - validates a `spec.json` and `plan.json` before output;
-- produces one `task.json` and one human-readable `TASK.md` for every Intent;
+- produces `task.json`, `task.yml` and a human-readable `TASK.md` for every Intent;
 - binds tasks to `Blueprint`, `zig-0.16`, UbiQ, BadgerDB, Postgres, MongoDB and the test profile selected in the plan;
 - requires stateful AtomicBehavior, explicit `Ok` and `Error` events, evidence, Human-in-the-Healing-Loop and exact-resume integration coverage.
 
-YAML input/output, Blueprint-template discovery, the actual file renderer and CI conformance gate are deliberate next increments. They must consume the same generated task contract, not create a second task format.
+It can materialize a task as a protected scaffold and then verify that every declared file and immutable structured value remains aligned with the task contract. Blueprint-template discovery and richer semantic validation are the next increments; they must consume the same generated task contract, not create a second task format.
 
 ## Quick start
 
@@ -47,8 +47,11 @@ Requires Node.js `>=22.18`.
 
 ```bash
 npm test
-node --experimental-strip-types src/cli.ts validate examples/commerce/spec.json examples/commerce/plan.json
-node --experimental-strip-types src/cli.ts generate examples/commerce/spec.json examples/commerce/plan.json generated
+node --experimental-strip-types src/cli.ts validate examples/commerce/spec.yml examples/commerce/plan.yml
+node --experimental-strip-types src/cli.ts generate examples/commerce/spec.yml examples/commerce/plan.yml generated
+node --experimental-strip-types src/cli.ts verify generated/TASK-commit-sale-sales-commit-sale/task.yml
+node --experimental-strip-types src/cli.ts materialize generated/TASK-commit-sale-sales-commit-sale/task.yml target
+node --experimental-strip-types src/cli.ts conformance generated/TASK-commit-sale-sales-commit-sale/task.yml target
 ```
 
 The last command creates:
@@ -62,7 +65,7 @@ generated/
 
 ## Input contracts
 
-`spec.json` is deliberately business-facing. A feature can contain one or more Intent-based functionalities.
+`spec.yml` (or JSON) is deliberately business-facing. A feature can contain one or more Intent-based functionalities.
 
 ```json
 {
@@ -85,7 +88,7 @@ generated/
 }
 ```
 
-`plan.json` is architectural and is intentionally explicit. The compiler never asks an implementation agent to guess its runtime, stores, transports or quality gates.
+`plan.yml` (or JSON) is architectural and is intentionally explicit. The compiler never asks an implementation agent to guess its runtime, stores, transports or quality gates.
 
 ```json
 {
@@ -123,6 +126,8 @@ For `Sales.CommitSale`, SpecForge declares all implementation files before an ag
 
 The task is accepted only if all declared files exist with the prescribed values, every required validation passes and no undeclared implementation file is introduced.
 
+`materialize` creates the declared files without overwriting an existing file. Structured YAML contracts are verified byte-for-byte. Implementation and test files retain a generated contract header, so agents can add code below it while the task identity and mandatory values remain auditable.
+
 ## Development
 
 ```bash
@@ -132,8 +137,7 @@ npm run check
 
 ## Roadmap
 
-1. YAML parser/serializer and JSON Schema publication.
-2. Read a pinned Blueprint manifest/catalog instead of the current fixed v1 mapping.
-3. Render the declared task files, then validate the resulting project tree.
-4. Add a GitHub Actions conformance gate and a pull-request task report.
-5. Add a Codex skill that only accepts a task after `task.json` validation.
+1. Read a pinned Blueprint manifest/catalog instead of the current fixed v1 mapping.
+2. Parse the actual Blueprint schemas and validate semantic values instead of only the current structural contract.
+3. Add a pull-request task report and changed-file proof.
+4. Add a Codex skill that only accepts a task after `task.yml` conformance.
