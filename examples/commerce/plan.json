@@ -1,0 +1,24 @@
+{
+  "blueprint": {
+    "source": "suissa/AllasCode-Blueprint",
+    "version": "main",
+    "root": "Blueprint"
+  },
+  "architecture": {
+    "runtime": "zig-0.16",
+    "messaging": "ubiq",
+    "event_store": "badgerdb",
+    "write_store": "postgresql",
+    "read_store": "mongodb",
+    "crypto": {
+      "payload": "xchacha20-poly1305",
+      "signatures": "ed25519"
+    }
+  },
+  "quality": {
+    "unit": "required",
+    "integration": "required",
+    "conformance": "required",
+    "property_tests": "required"
+  }
+}
