@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import type { GeneratedTask, TaskFile } from "./types.ts";
@@ -50,6 +50,29 @@ export async function conformance(task: GeneratedTask, root: string): Promise<st
     } else {
       const expected = renderFile(task, file).trim();
       if (actual.trim() !== expected) errors.push(`Structured contract differs from task values: ${file.path}`);
+    }
+  }
+  const declared = new Set(task.files.map((file) => file.path));
+  const manifest = task.files.find((file) => file.kind === "atomic_behavior_manifest");
+  if (manifest) {
+    const behaviorDirectory = manifest.path.slice(0, manifest.path.lastIndexOf("/"));
+    const directory = targetPath(root, behaviorDirectory);
+    const walk = async (current: string): Promise<string[]> => {
+      let entries: Awaited<ReturnType<typeof readdir>>;
+      try {
+        entries = await readdir(current, { withFileTypes: true });
+      } catch {
+        return [];
+      }
+      const children = await Promise.all(entries.map(async (entry) => {
+        const next = join(current, entry.name);
+        return entry.isDirectory() ? walk(next) : [next];
+      }));
+      return children.flat();
+    };
+    for (const found of await walk(directory)) {
+      const taskRelative = relative(resolve(root), found).replaceAll("\\", "/");
+      if (!declared.has(taskRelative)) errors.push(`Undeclared file in AtomicBehavior boundary: ${taskRelative}`);
     }
   }
   return errors;

@@ -78,4 +78,9 @@ test("materialized task passes conformance and detects contract mutation", async
   const changed = (await readFile(manifest, "utf8")).replace("event_store: \"badgerdb\"", "event_store: \"other\"");
   await writeFile(manifest, changed);
   assert.deepEqual(await conformance(task, root), ["Structured contract differs from task values: Blueprint/atomicbehavior/Sales.CommitSale/manifest.yml"]);
+  await writeFile(join(root, "Blueprint/atomicbehavior/Sales.CommitSale/unplanned.tmp"), "temporary");
+  assert.deepEqual(await conformance(task, root), [
+    "Structured contract differs from task values: Blueprint/atomicbehavior/Sales.CommitSale/manifest.yml",
+    "Undeclared file in AtomicBehavior boundary: Blueprint/atomicbehavior/Sales.CommitSale/unplanned.tmp"
+  ]);
 });
