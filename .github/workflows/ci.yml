@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: 24
           check-latest: true
+      - run: node -e "const fs=require('fs'); const html=fs.readFileSync('index.html','utf8'); const script=html.match(/<script>([\\s\\S]*)<\\/script>/); if (!script) throw new Error('index.html has no script'); new Function(script[1]);"
       - run: node --test --experimental-strip-types test/**/*.test.ts
       - run: node --experimental-strip-types src/cli.ts validate examples/commerce/spec.yml examples/commerce/plan.yml
       - run: node --experimental-strip-types src/cli.ts generate examples/commerce/spec.yml examples/commerce/plan.yml generated
